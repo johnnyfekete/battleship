@@ -2,27 +2,18 @@ import { useState } from 'react';
 import Cell from './components/Cell';
 import './App.css';
 
-const ships = {
-  shipTypes: {
-    carrier: {size: 5, count: 1},
-    battleship:{size: 4, count: 1},
-    cruiser:{size: 3, count: 1},
-    destroyer:{size: 2, count: 1},
-    submarine: { size: 3, count: 1}
-  },
-  layout: [
-    {ship: 'carrier', positions: [[2,9],[3,9],[4,9],[5,9],[6,9]]},
-    {ship: 'battleship', positions: [[5,2],[5,3],[5,4],[5,5]]},
-    {ship: 'cruiser', positions: [[8,1],[8,2],[8,3]]},
-    {ship: 'submarine', positions: [[3,0],[3,1],[3,2]]},
-    {ship: 'destroyer', positions: [[0,0],[1,0]]}
-  ]
+const shipTypes = {
+  carrier: {size: 5, count: 1},
+  battleship:{size: 4, count: 1},
+  cruiser:{size: 3, count: 1},
+  destroyer:{size: 2, count: 1},
+  submarine: { size: 3, count: 1}
 };
 
 function App() {
   const [grid, setGrid] = useState(createGrid());
   const [clickCount, setClickCount] = useState(0);
-  const [hitsLeft, setHitsLeft] = useState(1); //useState(initialHitsLeft());
+  const [hitsLeft, setHitsLeft] = useState(initialHitsLeft());
 
   // fire a torpedo on a target cell
   const fire = (target) => {
@@ -91,32 +82,83 @@ function App() {
 
 export default App;
 
+
+const initialHitsLeft = () => {
+  // loop through ships and count the number of ships
+  let hitsLeft = 0;
+  for (let shipType in shipTypes) {
+    hitsLeft += shipTypes[shipType].count * shipTypes[shipType].size;
+  }
+  return hitsLeft;
+}
+
 const createGrid = () => {
+  // create default grid
   const grid = [];
   for (let i = 0; i < 10; i++) {
     grid[i] = [];
     for (let j = 0; j < 10; j++) {
-
-      // check if any ships have been placed on this cell
-      const ship = ships.layout.find(ship => ship.positions.find(pos => pos[0] === i && pos[1] === j));
-
       grid[i][j] = {
         x: i,
         y: j,
-        ship,
+        ship: false,
         hit: false,
       };
+    }
+  }
+
+  // add ships
+  for (let shipType in shipTypes) {
+    const ship = shipTypes[shipType];
+    for (let i = 0; i < ship.count; i++) {
+
+      // try to position ship
+      let placed = false;
+      while (!placed) {
+        const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+        const x = Math.floor(Math.random() * 10);
+        const y = Math.floor(Math.random() * 10);
+        const positions = [];
+        if (direction === 'horizontal') {
+          for (let j = 0; j < ship.size; j++) {
+            positions.push([x + j, y]);
+          }
+        } else {
+          for (let j = 0; j < ship.size; j++) {
+            positions.push([x, y + j]);
+          }
+        }
+
+        // check if ship can be placed
+        let canPlace = true;
+        positions.forEach(position => {
+          console.log(grid, position[0], position[1]);
+          try {
+            if (grid[position[0]][position[1]].ship) {
+              canPlace = false;
+            }
+          } catch (e) {
+            canPlace = false;
+          }
+        });
+        
+        if (canPlace) {
+          positions.forEach(position => {
+            grid[position[0]][position[1]].ship = {
+              type: shipType,
+              size: ship.size,
+              direction: direction,
+              x: position[0],
+              y: position[1]
+            };
+          });
+          placed = true;
+        }
+      }
     }
   }
 
   return grid;
 }
 
-const initialHitsLeft = () => {
-  // loop through ships and count the number of ships
-  let hitsLeft = 0;
-  for (let shipType in ships.shipTypes) {
-    hitsLeft += ships.shipTypes[shipType].count * ships.shipTypes[shipType].size;
-  }
-  return hitsLeft;
-}
+
