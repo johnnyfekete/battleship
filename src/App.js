@@ -58,7 +58,7 @@ function App() {
           {grid.map((row, i) => (
             <div key={i} className="flex flex-col w-8 mx-[2px] justify-center items-center">
               {row.map((cell, j) => (
-                <div key={j} className="my-[1px]">
+                <div key={j} className="my-[2px]">
                   <Cell ship={cell.ship} hit={cell.hit} onClick={() => fire(cell)} />
                 </div>
               ))}
@@ -143,13 +143,15 @@ const createGrid = () => {
         });
         
         if (canPlace) {
-          positions.forEach(position => {
+          positions.forEach((position, index) => {
             grid[position[0]][position[1]].ship = {
               type: shipType,
               size: ship.size,
               direction: direction,
+              first: index === 0,
+              last: index === ship.size - 1,
               x: position[0],
-              y: position[1]
+              y: position[1],
             };
           });
           placed = true;
