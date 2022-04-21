@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import Cell from './components/Cell';
+import createGrid from './utils/createGrid';
+import initialHitsLeft from './utils/initialHitsLeft';
 import './App.css';
 
 const shipTypes = {
@@ -11,9 +13,10 @@ const shipTypes = {
 };
 
 function App() {
-  const [grid, setGrid] = useState(createGrid());
+  const [grid, setGrid] = useState(createGrid(shipTypes));
   const [clickCount, setClickCount] = useState(0);
-  const [hitsLeft, setHitsLeft] = useState(initialHitsLeft());
+  const [hitsLeft, setHitsLeft] = useState(initialHitsLeft(shipTypes));
+  const [showHelp, setShowHelp] = useState(false);
 
   // fire a torpedo on a target cell
   const fire = (target) => {
@@ -37,21 +40,28 @@ function App() {
 
   // reset game
   const reset = () => {
-    setGrid(createGrid());
+    setGrid(createGrid(shipTypes));
     setClickCount(0);
-    setHitsLeft(initialHitsLeft());
+    setHitsLeft(initialHitsLeft(shipTypes));
+    setShowHelp(false);
   };
-
-  
 
   return (
     <div className="container mx-auto flex flex-col">
       <h1 className="text-center text-blue-900 font-black text-3xl mt-8 mb-4">Battleship</h1>
 
       <div className="max-w-2xl mx-auto justify-center items-center">
-        <div className="flex">
-          <h2>Clicks: {clickCount}</h2>
-          <h2 className="ml-auto">Hits left: {hitsLeft}</h2>
+        <div className="flex mb-4 items-center">
+          <h2 className="mr-auto">Clicks: {clickCount}</h2>
+          {!showHelp && (
+            <button type="button" 
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-0 px-2 rounded-full mr-2 ml-auto"
+              onClick={() => setShowHelp(true)}
+            >
+              Show help
+            </button>
+          )}
+          <h2>Hits left: {hitsLeft}</h2>
         </div>
 
         <div className="flex mb-8">
@@ -59,7 +69,7 @@ function App() {
             <div key={i} className="flex flex-col w-8 mx-[2px] justify-center items-center">
               {row.map((cell, j) => (
                 <div key={j} className="my-[2px]">
-                  <Cell ship={cell.ship} hit={cell.hit} onClick={() => fire(cell)} />
+                  <Cell ship={cell.ship} hit={cell.hit} onClick={() => fire(cell)} showHelp={showHelp} />
                 </div>
               ))}
             </div>
@@ -81,86 +91,3 @@ function App() {
 }
 
 export default App;
-
-
-const initialHitsLeft = () => {
-  // loop through ships and count the number of ships
-  let hitsLeft = 0;
-  for (let shipType in shipTypes) {
-    hitsLeft += shipTypes[shipType].count * shipTypes[shipType].size;
-  }
-  return hitsLeft;
-}
-
-const createGrid = () => {
-  // create default grid
-  const grid = [];
-  for (let i = 0; i < 10; i++) {
-    grid[i] = [];
-    for (let j = 0; j < 10; j++) {
-      grid[i][j] = {
-        x: i,
-        y: j,
-        ship: false,
-        hit: false,
-      };
-    }
-  }
-
-  // add ships
-  for (let shipType in shipTypes) {
-    const ship = shipTypes[shipType];
-    for (let i = 0; i < ship.count; i++) {
-
-      // try to position ship
-      let placed = false;
-      while (!placed) {
-        const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
-        const x = Math.floor(Math.random() * 10);
-        const y = Math.floor(Math.random() * 10);
-        const positions = [];
-        if (direction === 'horizontal') {
-          for (let j = 0; j < ship.size; j++) {
-            positions.push([x + j, y]);
-          }
-        } else {
-          for (let j = 0; j < ship.size; j++) {
-            positions.push([x, y + j]);
-          }
-        }
-
-        // check if ship can be placed
-        let canPlace = true;
-        positions.forEach(position => {
-          console.log(grid, position[0], position[1]);
-          try {
-            if (grid[position[0]][position[1]].ship) {
-              canPlace = false;
-            }
-          } catch (e) {
-            canPlace = false;
-          }
-        });
-        
-        if (canPlace) {
-          positions.forEach((position, index) => {
-            grid[position[0]][position[1]].ship = {
-              type: shipType,
-              size: ship.size,
-              direction: direction,
-              first: index === 0,
-              last: index === ship.size - 1,
-              x: position[0],
-              y: position[1],
-            };
-          });
-          placed = true;
-        }
-      }
-    }
-  }
-
-  return grid;
-}
-
-

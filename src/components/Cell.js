@@ -1,19 +1,19 @@
 import classNames from 'classnames';
 
-const Cell = ({ ship, hit, onClick }) => {
+const Cell = ({ ship, hit, onClick, showHelp }) => {
   return (
     <button type="button" className={classNames('w-8 h-8 flex rounded-sm overflow-hidden',
     'transition-all duration-300 hover:scale-110',
     'active:transition-none active:scale-110 active:translate-y-[1px]',
     {
-      'bg-blue-700' : !hit,
-      'outline-blue-700 outline outline-1 outline-offset-1' : !hit && ship,
-      'bg-red-700': hit && ship,
+      'bg-blue-600' : !hit,
+      'outline-blue-600 outline outline-1 outline-offset-1' : !hit && ship && showHelp,
+      'bg-red-500': hit && ship,
       'bg-blue-900': hit && !ship
     })}
     onClick={onClick}>
       {hit && ship && (
-        <div className={classNames('bg-gray-700', {
+        <div className={classNames('bg-gray-600', {
           'w-4 mx-auto': ship.direction === 'vertical',
           'h-4 my-auto': ship.direction === 'horizontal',
           'w-8': ship.direction === 'horizontal' && !ship.first && !ship.last,
