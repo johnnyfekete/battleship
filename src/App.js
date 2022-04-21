@@ -22,8 +22,9 @@ const ships = {
 function App() {
   const [grid, setGrid] = useState(createGrid());
   const [clickCount, setClickCount] = useState(0);
-  const [hitsLeft, setHitsLeft] = useState(initialHitsLeft());
+  const [hitsLeft, setHitsLeft] = useState(1); //useState(initialHitsLeft());
 
+  // fire a torpedo on a target cell
   const fire = (target) => {
     target.hit = true;
     // replace the cell in X and Y of grid with new cell
@@ -43,17 +44,26 @@ function App() {
     }
   };
 
+  // reset game
+  const reset = () => {
+    setGrid(createGrid());
+    setClickCount(0);
+    setHitsLeft(initialHitsLeft());
+  };
+
+  
+
   return (
-    <div className="container flex flex-col">
-      <h1 className="text-center font-black text-3xl my-4">Battleship</h1>
+    <div className="container mx-auto flex flex-col">
+      <h1 className="text-center text-blue-900 font-black text-3xl mt-8 mb-4">Battleship</h1>
 
       <div className="max-w-2xl mx-auto justify-center items-center">
         <div className="flex">
           <h2>Clicks: {clickCount}</h2>
-          <h2>Hits left: {hitsLeft}</h2>
+          <h2 className="ml-auto">Hits left: {hitsLeft}</h2>
         </div>
 
-        <div className="flex">
+        <div className="flex mb-8">
           {grid.map((row, i) => (
             <div key={i} className="flex flex-col w-8 mx-[2px] justify-center items-center">
               {row.map((cell, j) => (
@@ -65,6 +75,16 @@ function App() {
           ))}
         </div>
       </div>
+
+      {(hitsLeft === 0) && (
+        <div className="fixed inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center mx-auto">
+          <h1 className="text-center text-blue-900 font-black text-3xl mt-8 mb-4">You win!</h1>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full my-4" 
+            onClick={reset}>
+              Play again
+          </button>
+        </div>
+      )}
     </div>
   );
 }
